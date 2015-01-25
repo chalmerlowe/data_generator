@@ -1,5 +1,5 @@
 # Title: data_generator.py
-# Usage: data_generator.py
+# Usage: data_generator.py <input_file> <num_of_lines> <file_type> <output_file>
 # Revision: 0.9
 # Python version: 3.x
 # Author: Chalmer Lowe 
@@ -8,9 +8,6 @@
 #              data for use in classes and demonstrations.
 # 
 # TODO:
-#   1) enable reading in a simple list of names and autogenerate related email
-#      addresses
-#      i.e. 'bruce wayne' => 'bwayne@justice_league.com'
 #   2) improve commenting so that the functions have built-in help
 #   3) enable an option such that the user can skip writing a full-blown file 
 #      and can instead write just a certain set of columns
@@ -23,7 +20,7 @@
 #      * pickle
 #   7) add more columns?
 #      * to/fm mac addr - need to consider pairing to ips?
-#      * payload size
+#      * payload size (0-1000000) # FUNC is complete, not integrated yet.
 #      * user agent string - need to consider pairing to ips?
 #        > browser
 #        > windows/mac/linux
@@ -33,41 +30,44 @@
 #      * enable the inclusion of some/all
 #      * enable the use of threshholds: very corrupted/limited corruption
 #   9) add an option to set the delimiter AND/OR include quoting
-#  10) when creating a sql db, strip off newlines prior to creating entries
 
 from random import choice, randint, random
 import datetime
 from datetime import datetime as dt
+from collections import defaultdict
 
 import sys
 
 try:
-    num_of_lines = int(sys.argv[1])
-    file_type = sys.argv[2]
-    out_file = sys.argv[3]
+    input_file = sys.argv[1]
+    num_of_lines = int(sys.argv[2])
+    file_type = sys.argv[3]
+    out_file = sys.argv[4]
 
 except IndexError:
     sys.exit('''
     data_generator produces data in multiple formats, including sql tables
     and csvs.
-    Usage: data_generator.py <num_of_lines> <file_type> <out_filename>
+    Usage: data_generator.py <input_file> <num_of_lines> <file_type> <out_file>
     ''')
 
+def create_email(fname, lname, domain):
+    '''Creates an email address in the format first initial last name @ domain
+    for example:
+    bwayne@batman.org
+    '''
+    addr = '{}{}@{}'.format(fname[0], lname, domain)
+    return addr
 
-names = {'natasha romanova': 'nromanova@avengers.org',
-         'steve rogers': 'srogers@avengers.org',
-         'carol danvers': 'cdanvers@avengers.org',
-         'sam wilson': 'swilson@avengers.org',
-         'hank pym': 'hpym@avengers.org',
-         'clint barton': 'cbarton@avengers.org',
-         'bruce banner': 'bbanner@avengers.org',
-         'tony stark': 'tstark@avengers.org',
-         'wanda maximoff': 'wmaximoff@avengers.org',
-         'jessica drew': 'jdrew@avengers.org',
-         'thor odinson': 'todinson@avengers.org',
-         'janet van dyne': 'jvdyne@avengers.org',
-         'simon williams': 'swilliams@avengers.org',
-        }
+fin = open(input_file)
+domain = fin.readline().strip()
+
+names = defaultdict(str)
+
+for line in fin:
+    line = line.strip()
+    fname, lname = line.split(' ')
+    names[line] = create_email(fname, lname, domain)
         
 def generate_ips():
     '''creates a list of strings that simulate compliant ip addresses.
@@ -83,7 +83,15 @@ def generate_ips():
         octets = []
     return ips
 
+
 ip_list = generate_ips()    
+
+def create_payload_size():
+    '''Generates a random payload size for the communication session.
+    Ranges from 1 byte to 1000000 bytes
+    '''
+    size = choice(range(1, 1000001))
+    return size
 
     
 def create_tdelta():            # rename...
@@ -91,20 +99,23 @@ def create_tdelta():            # rename...
     should produce incremental timestamps with a small, variable 
     separation from the previous timestamp. 
     '''
-    digits = [-1, 0, 0, 0, 0, 0]
-    inc = datetime.timedelta(choice(digits),
-                             choice(range(1, 100))
-                             )
-    return inc                             
+    digits = [-1, 0, 0, 0, 0, 0]      # this construct roughly equates to
+                                      # a backwards shift of ~1 day for every 
+                                      # six records. Add/remove zeroes to change
+                                      # this
+    increment = datetime.timedelta(choice(digits),
+                             choice(range(1, 100)))
+    return increment                             
 
     
 def geo(min_lat, max_lat, min_long, max_long):
     '''creates a pair of numbers that simulate a geo-location with
     latitude and longitude based on the decimal degrees format:
     40.446 N 79.982 W
-    For purposes of generating 'bounding box' problems, this generator
+    For purposes of generating 'bounding box' puzzles/problems, this generator
     can output geos within a 'large' bounding box enabling a smaller
-    bounding box to be selected out of the broader range of geos
+    bounding box to be selected out of the broader range of geos as part of the
+    puzzle.
     '''
     lat_bounds = [min_lat, max_lat]
     lat = (random() * (max_lat - min_lat)) + min_lat
@@ -117,7 +128,8 @@ def geo(min_lat, max_lat, min_long, max_long):
     return lat, long
 
 
-# lichtenstein (why, because!)
+# The lat longs below create a bounding box around Liechtenstein 
+# (why?, because!)
 # 47.141667, 9.523333     
 
 min_lat = 45
@@ -125,8 +137,12 @@ max_lat = 50
 min_long = 7.5
 max_long = 12.5
 
-def create_outputs(num_of_lines):
+def create_outputs(num_of_lines, new_line=True):
     output = ''
+    if new_line == True:
+        new_line = '\n'
+    else:
+        new_line = ''
     curr_time = dt.now()
     outputs = []
     for line in range(num_of_lines):
@@ -140,7 +156,8 @@ def create_outputs(num_of_lines):
         tstamp = curr_time.strftime('%Y-%m-%dT%H:%M:%S')
         lat, long = geo(min_lat, max_lat, min_long, max_long)
         # print(name, email, fmip, toip, tstamp, lat, long)    #dbg
-        output = ','.join([name, email, fmip, toip, tstamp, lat, long]) + '\n'
+        output = ','.join([name, email, fmip, 
+                           toip, tstamp, lat, long]) + new_line
         time_inc = create_tdelta()
         curr_time += time_inc
         outputs.append(output)
@@ -170,7 +187,7 @@ elif file_type == 'sql':
     except:
         pass
 
-    outputs = create_outputs(num_of_lines)
+    outputs = create_outputs(num_of_lines, new_line=False)
     print('Output length (sql):', len(outputs))
     for line in outputs:
         name, email, fmip, toip, datetime, lat, long = line.split(',')
