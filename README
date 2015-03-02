@@ -1,1 +1,3 @@
-data_generator.py is intended to enable teachers, hobbyists, students, etc to create defined data sets for use in classrooms, self study, etc.
+data_generator.py (dg) is intended to enable teachers, hobbyists, students, etc to create defined data sets for use in classrooms, self study, etc.
+
+The general premise is that dg produces tabular data based on certain seeds. The tables can be output into csv file formats as well as 
