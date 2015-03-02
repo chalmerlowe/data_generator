@@ -2,7 +2,9 @@ data_generator.py (dg) is intended to enable teachers, hobbyists, students, etc 
 
 The general premise is that dg produces tabular data based on certain seeds. The tables can be output into file formats such as csv or sql. The current seeds are simply a list of superhero names from the DC Comics pantheon.
 
-
+Required input file format:
+Line 1: a representative domain name (such as jleague.org)
+Lines 2 to the end: sample user names (such as bruce wayne)
 
 Supported output file formats:
 * csv
