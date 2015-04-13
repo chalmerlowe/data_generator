@@ -1,19 +1,19 @@
 # Title: data_generator.py
 # Usage: data_generator.py <input_file> <num_of_lines> <file_type> <output_file>
-# Revision: 0.9
+# Revision: 0.9.1
 # Python version: 3.x
-# Author: Chalmer Lowe 
+# Author: Chalmer Lowe
 # Date: 20150121
-# Description: This script generates various files with random/semi-random 
+# Description: This script generates various files with random/semi-random
 #              data for use in classes and demonstrations.
-# 
+#
 # TODO:
 #   2) improve commenting so that the functions have built-in help
-#   3) enable an option such that the user can skip writing a full-blown file 
+#   3) enable an option such that the user can skip writing a full-blown file
 #      and can instead write just a certain set of columns
 #      i.e. can choose just name, or just name, email, lat & long columns
 #   4) provide an option to include a header row
-#   5) improve the usage component to produce a help file 
+#   5) improve the usage component to produce a help file
 #   6) set up outputs for other file types...
 #      * json
 #      * xml
@@ -68,7 +68,7 @@ for line in fin:
     line = line.strip()
     fname, lname = line.split(' ')
     names[line] = create_email(fname, lname, domain)
-        
+
 def generate_ips():
     '''creates a list of strings that simulate compliant ip addresses.
     '''
@@ -77,14 +77,14 @@ def generate_ips():
     for x in range(30):
         for octet in range(4):
             octets.append(str(choice(range(1, 256))))
-            
+
         ip = '.'.join(octets)
         ips.append(ip)
         octets = []
     return ips
 
 
-ip_list = generate_ips()    
+ip_list = generate_ips()
 
 def create_payload_size():
     '''Generates a random payload size for the communication session.
@@ -93,21 +93,21 @@ def create_payload_size():
     size = choice(range(1, 1000001))
     return size
 
-    
+
 def create_tdelta():            # rename...
     '''creates a number that simulates a compliant timestamp.
-    should produce incremental timestamps with a small, variable 
-    separation from the previous timestamp. 
+    should produce incremental timestamps with a small, variable
+    separation from the previous timestamp.
     '''
     digits = [-1, 0, 0, 0, 0, 0]      # this construct roughly equates to
-                                      # a backwards shift of ~1 day for every 
+                                      # a backwards shift of ~1 day for every
                                       # six records. Add/remove zeroes to change
                                       # this
     increment = datetime.timedelta(choice(digits),
                              choice(range(1, 100)))
-    return increment                             
+    return increment
 
-    
+
 def geo(min_lat, max_lat, min_long, max_long):
     '''creates a pair of numbers that simulate a geo-location with
     latitude and longitude based on the decimal degrees format:
@@ -120,17 +120,17 @@ def geo(min_lat, max_lat, min_long, max_long):
     lat_bounds = [min_lat, max_lat]
     lat = (random() * (max_lat - min_lat)) + min_lat
     lat = str(round(lat, 5))
-    
+
     long_bounds = [min_long, max_long]
     long = (random() * (max_long - min_long)) + min_long
     long = str(round(long, 5))
-    
+
     return lat, long
 
 
-# The lat longs below create a bounding box around Liechtenstein 
+# The lat longs below create a bounding box around Liechtenstein
 # (why?, because!)
-# 47.141667, 9.523333     
+# 47.141667, 9.523333
 
 min_lat = 45
 max_lat = 50
@@ -148,7 +148,7 @@ def create_outputs(num_of_lines, new_line=True):
     for line in range(num_of_lines):
         # generate a new line by calling all the appropriate funcs
         # and gathering the results into an output line
-        
+
         name = choice(list(names.keys()))
         email = names[name]
         fmip = choice(ip_list)
@@ -156,7 +156,7 @@ def create_outputs(num_of_lines, new_line=True):
         tstamp = curr_time.strftime('%Y-%m-%dT%H:%M:%S')
         lat, long = geo(min_lat, max_lat, min_long, max_long)
         # print(name, email, fmip, toip, tstamp, lat, long)    #dbg
-        output = ','.join([name, email, fmip, 
+        output = ','.join([name, email, fmip,
                            toip, tstamp, lat, long]) + new_line
         time_inc = create_tdelta()
         curr_time += time_inc
@@ -166,17 +166,17 @@ def create_outputs(num_of_lines, new_line=True):
 
 if file_type == 'csv':
     with open(out_file, 'w') as fout:
-        outputs = create_outputs(num_of_lines)    
+        outputs = create_outputs(num_of_lines)
         print('Output length (csv):', len(outputs))
         for line in outputs:
             fout.write(line)
     fout.close()
-    
+
 elif file_type == 'sql':
     import sqlite3 as sql
     conn = sql.connect(out_file)
     cur = conn.cursor()
-    try: 
+    try:
         cur.execute('''CREATE TABLE superheroes (name text,
                                                  email text,
                                                  fmip text,
