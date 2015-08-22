@@ -1,12 +1,46 @@
 data_generator.py (dg) is intended to enable teachers, hobbyists, students, etc to create defined data sets for use in classrooms, self study and as data for puzzles. This allows an instructor to create a well defined data set with known characteristics.
 
-The general premise is that dg produces tabular data based on certain seeds. The tables can be output into file formats such as csv or sql. The current seeds are simply a list of superhero names from the DC Comics pantheon.
+The general premise is that dg produces tabular data based on certain seeds. The tabular data can be output into file formats such as csv, sql, etc. The current seeds are simply a list of superhero names and domains from the DC Comics pantheon.
 
-Required input file format:
+Required input file format: --------------------------------------------------
 Line 1: a representative domain name (such as jleague.org)
 Lines 2 to the end: sample user names (such as bruce wayne)
 
-Supported output file formats:
+The data generator currently creates columns with the following data: --------
+* names
+* emails
+* from ip
+* to ip
+* latitude
+* longitude
+* datetime stamps
+
+Areas for growth include: ----------------------------------------------------
+0) improve commenting so that the functions have built-in help
+2) enable an option such that the user can skip writing a full-blown file
+   and can instead write just a certain set of columns
+   i.e. can choose just name, or just name, email, lat & long columns
+3) provide an option to include a header row
+4) improve the usage component to produce a help file
+5) set up outputs for other file types...
+   * json
+   * xml
+   * pickle
+6) add more columns?
+   * to/fm mac addr - need to consider pairing to ips?
+   * payload size (0-1000000) # FUNC is complete, not integrated yet.
+   * user agent string - need to consider pairing to ips?
+      > browser
+      > windows/mac/linux
+      > version
+7) add an option to include/exclude corrupted data
+   * corrupted data -> NULL, blank lines, random gobbledy-gook
+   * enable the inclusion of some/all
+   * enable the use of threshholds: very corrupted/limited corruption
+8) add an option to set the delimiter AND/OR include quoting
+
+
+Currently supported output file formats: -------------------------------------
 * csv
 * sql
 
