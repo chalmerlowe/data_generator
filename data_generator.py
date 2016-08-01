@@ -39,17 +39,14 @@ from collections import defaultdict
 import sys
 
 try:
-    input_file = sys.argv[1]
-    num_of_lines = int(sys.argv[2])
-    file_type = sys.argv[3]
-    out_file = sys.argv[4]
-
-except IndexError:
+    input_file, num_of_lines, file_type, out_file = sys.argv[1:4+1]
+except ValueError:
     sys.exit('''
     data_generator produces data in multiple formats, including sql tables
     and csvs.
     Usage: data_generator.py <input_file> <num_of_lines> <file_type> <out_file>
     ''')
+num_of_lines = int(num_of_lines)
 
 def create_email(fname, lname, domain):
     '''Creates an email address in the format first initial last name @ domain
